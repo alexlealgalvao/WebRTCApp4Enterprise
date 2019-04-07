@@ -52,10 +52,6 @@ pageEncoding="UTF-8"%>
 
 
 	var name = "<%= request.getParameter("name") %>";
-
-	if (name == "null") {
-		alert("No stream specified. Please add ?name={STREAM_ID}  to the url");
-	}
 	var token = "<%= request.getParameter("token") %>";
 
 	var pAutoplay = "<%= request.getParameter("autoplay") %>";
@@ -64,20 +60,35 @@ pageEncoding="UTF-8"%>
 		autoPlay = false;
 	}
 
-
-
-	/*
-		Check that which one is in the first order
-	 */
-	if (playOrder[0] == "WebRTC" ){
-
-		initializeWebRTCPlayer(name, token);
-
-	} else if (playOrder[0] == "HLS" ){
-
-		tryToHLSPlay(name, token);
-
-	}
+	
+	var streamsFolder = "streams";
+	 if (name != "null") 
+	 {
+		
+		if (name.startsWith(streamsFolder)) 
+		{
+			/*
+			* If name starts with streams, it's hls or mp4 file to be played
+			*/
+			var lastIndexOfDot = name.lastIndexOf(".")
+			streamPath = name.substring(streamsFolder.length+1, lastIndexOfDot);
+			var extension = name.substring(lastIndexOfDot+1);
+			initializeHLSPlayer(streamPath, extension, token);
+		}
+		else {
+			/*
+			 * Check that which one is in the first order
+		    */
+			if (playOrder[0] == "WebRTC" ){
+				initializeWebRTCPlayer(name, token);
+			} else if (playOrder[0] == "HLS" ){
+				tryToHLSPlay(name, token);
+			}
+		}
+	 }
+	 else {
+		 alert("No stream specified. Please add ?name={STREAM_ID}  to the url");
+	 }
 
 
 	function hideHLSElements(){
@@ -246,11 +257,7 @@ pageEncoding="UTF-8"%>
 				//alert(JSON.stringify(error));
 			}
 		});
-
-
-
 	}
-
 </script>
 
 </body>
