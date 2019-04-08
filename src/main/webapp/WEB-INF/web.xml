@@ -20,11 +20,11 @@
 		<listener-class>org.red5.logging.ContextLoggingListener
 		</listener-class>
 	</listener>
-	
-     <listener>
-        <listener-class>io.antmedia.filter.TokenSessionFilter</listener-class>
-    </listener>
-	
+
+	<listener>
+		<listener-class>io.antmedia.filter.TokenSessionFilter</listener-class>
+	</listener>
+
 	<filter>
 		<filter-name>TokenFilter</filter-name>
 		<filter-class>io.antmedia.filter.TokenFilterManager</filter-class>
@@ -33,12 +33,12 @@
 		<filter-name>TokenFilter</filter-name>
 		<url-pattern>*.m3u8</url-pattern>
 	</filter-mapping>
-	
+
 	<filter-mapping>
 		<filter-name>TokenFilter</filter-name>
 		<url-pattern>*.mp4</url-pattern>
 	</filter-mapping>
-	
+
 	<filter>
 		<filter-name>HlsStatisticsFilter</filter-name>
 		<filter-class>io.antmedia.filter.HlsStatisticsFilter</filter-class>
@@ -47,16 +47,14 @@
 		<filter-name>HlsStatisticsFilter</filter-name>
 		<url-pattern>*.m3u8</url-pattern>
 	</filter-mapping>
-
 	<filter>
 		<filter-name>CorsFilter</filter-name>
 		<filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
 		<init-param>
-		  <param-name>cors.allowed.origins</param-name>
-		  <param-value>*</param-value>
-		</init-param>
+		    <param-name>cors.allowed.origins</param-name>
+		    <param-value>*</param-value>
+		 </init-param>
 	</filter>
-	
 	<filter-mapping>
 		<filter-name>CorsFilter</filter-name>
 		<url-pattern>/*</url-pattern>
@@ -131,7 +129,7 @@
 		<filter-name>RestAuthenticationFiler</filter-name>
 		<url-pattern>/rest/*</url-pattern>
 	</filter-mapping>
-	
+
 	<filter>
 		<filter-name>ExpiresFilter</filter-name>
 		<filter-class>org.apache.catalina.filters.ExpiresFilter</filter-class>
