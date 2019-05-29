@@ -153,6 +153,10 @@ body {
 	</div>
 </body>
 <script>
+	var token = "<%= request.getParameter("token") %>";
+	var streamId = "<%= request.getParameter("streamId") %>";
+
+	
 	var join_publish_button = document.getElementById("join_publish_button");
 	var stop_publish_button = document.getElementById("stop_publish_button");
 
@@ -166,7 +170,8 @@ body {
 
 	var publishStreamId;
 	function joinRoom() {
-		webRTCAdaptor.joinRoom(roomNameBox.value);
+				
+		webRTCAdaptor.joinRoom(roomNameBox.value, streamId);
 	}
 
 	function leaveRoom() {
@@ -227,9 +232,10 @@ body {
 		audio : true
 	};
 
-	var path =  location.hostname + ":" + location.port + "/WebRTCAppEE/websocket";
-	var websocketURL =  "ws://" + path;
-	
+	var path = location.hostname + ":" + location.port
+			+ "/WebRTCAppEE/websocket";
+	var websocketURL = "ws://" + path;
+
 	if (location.protocol.startsWith("https")) {
 		websocketURL = "wss://" + path;
 	}
