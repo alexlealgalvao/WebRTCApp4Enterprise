@@ -153,6 +153,10 @@ body {
 	</div>
 </body>
 <script>
+	var token = "<%= request.getParameter("token") %>";
+	var streamId = "<%= request.getParameter("streamId") %>";
+
+	
 	var join_publish_button = document.getElementById("join_publish_button");
 	var stop_publish_button = document.getElementById("stop_publish_button");
 
@@ -166,7 +170,8 @@ body {
 
 	var publishStreamId;
 	function joinRoom() {
-		webRTCAdaptor.joinRoom(roomNameBox.value);
+				
+		webRTCAdaptor.joinRoom(roomNameBox.value, streamId);
 	}
 
 	function leaveRoom() {
@@ -182,9 +187,9 @@ body {
 		remoteVideoIndex = 0;
 	}
 
-	function publish(streamName) {
+	function publish(streamName, token) {
 		publishStreamId = streamName;
-		webRTCAdaptor.publish(streamName);
+		webRTCAdaptor.publish(streamName, token);
 	}
 
 	function startAnimation() {
@@ -227,9 +232,10 @@ body {
 		audio : true
 	};
 
-	var path =  location.hostname + ":" + location.port + "/WebRTCAppEE/websocket";
-	var websocketURL =  "ws://" + path;
-	
+	var path = location.hostname + ":" + location.port
+			+ "/WebRTCAppEE/websocket";
+	var websocketURL = "ws://" + path;
+
 	if (location.protocol.startsWith("https")) {
 		websocketURL = "wss://" + path;
 	}
@@ -253,18 +259,18 @@ body {
 						console.log("joined the room: "
 								+ roomOfStream[obj.streamId]);
 						console.log(obj)
-						publish(obj.streamId);
+						publish(obj.streamId, token);
 						var streams = obj.streams;
 
 						if (obj.streams != null) {
 							obj.streams.forEach(function(item) {
 								console.log(item);
-								webRTCAdaptor.play(item);
+								webRTCAdaptor.play(item, token);
 							});
 						}
 					} else if (info == "streamJoined") {
 						console.debug("stream joined with id " + obj.streamId);
-						webRTCAdaptor.play(obj.streamId);
+						webRTCAdaptor.play(obj.streamId, token);
 					} else if (info == "newStreamAvailable") {
 						var room = roomOfStream[obj.streamId];
 						console.log("new stream available with id: "
