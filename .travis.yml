@@ -3,6 +3,19 @@ sudo: false
 before_install:
 - openssl aes-256-cbc -k "$GPG_PASSPHRASE" -in codesigning.asc.enc -out codesigning.asc -d
 - gpg --fast-import codesigning.asc
+# get parent project
+- (if [ $(git ls-remote https://github.com/ant-media/ant-media-server-parent.git $TRAVIS_BRANCH  | wc -l) == "1" ];  
+    then 
+      echo " $TRAVIS_BRANCH branch found";  
+      git clone --depth=1 -b $TRAVIS_BRANCH https://github.com/ant-media/ant-media-server-parent.git;  
+    else
+      echo "branch not found"; 
+      git clone --depth=1 https://github.com/ant-media/ant-media-server-parent.git;  
+  fi)
+- cd ant-media-server-parent
+- mvn clean install -DskipTests -Dmaven.javadoc.skip=true -Dgpg.skip=true --quiet
+- cd ..
+# get common project
 - (if [ $(git ls-remote https://github.com/ant-media/Ant-Media-Server-Common.git $TRAVIS_BRANCH  | wc -l) == "1" ];  
     then 
       echo " $TRAVIS_BRANCH branch found";  
@@ -14,6 +27,7 @@ before_install:
 - cd Ant-Media-Server-Common
 - mvn clean install -DskipTests -Dmaven.javadoc.skip=true -Dgpg.skip=true --quiet
 - cd ..
+#get server project
 - (if [ $(git ls-remote https://github.com/ant-media/Ant-Media-Server.git $TRAVIS_BRANCH  | wc -l) == "1" ];  
     then 
       echo "$TRAVIS_BRANCH branch found in Ant-Media-Server";  
@@ -25,7 +39,7 @@ before_install:
 - cd Ant-Media-Server 
 - mvn clean install -DskipTests -Dgpg.skip=true --quiet
 - cd ..  #up to Ant-Media-Server 
-  
+ # get enterprise project 
 - (if [ $(git ls-remote https://"$GITLAB_USERNAME":"$GITLAB_TOKEN"@"$GITLAB_REPO" $TRAVIS_BRANCH  | wc -l) == "1" ];  
     then 
       echo " $TRAVIS_BRANCH branch found";  
