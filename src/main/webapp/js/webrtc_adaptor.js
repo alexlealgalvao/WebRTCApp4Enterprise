@@ -342,12 +342,13 @@ function WebRTCAdaptor(initialValues)
 	}
 
 
-	this.joinRoom = function (roomName) {
+	this.joinRoom = function (roomName, streamId) {
 		thiz.roomName = roomName;
 
 		var jsCmd = {
 				command : "joinRoom",
 				room: roomName,
+				streamId: streamId,
 		}
 
 		thiz.webSocketAdaptor.send(JSON.stringify(jsCmd));
