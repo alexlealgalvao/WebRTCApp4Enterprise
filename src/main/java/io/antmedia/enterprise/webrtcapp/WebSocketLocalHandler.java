@@ -21,7 +21,10 @@ public class WebSocketLocalHandler extends WebSocketEnterpriseHandler {
 	@Override
 	public ApplicationContext getAppContext() {
 		if (appCtx == null) {
-			appCtx = WebRTCSampleApplication.getApplication().getContext().getApplicationContext();
+			WebRTCSampleApplication application = WebRTCSampleApplication.getApplication();
+			if (application != null) {
+				appCtx = application.getContext().getApplicationContext();
+			}
 		}
 		return appCtx;
 	}
