@@ -2,9 +2,10 @@ dist: xenial
 language: java
 jdk:
   - openjdk8
-sudo: false
+sudo: required
 before_install:
-- apt-get install openjfx
+- sudo apt-get update
+- sudo apt-get install openjfx
 - openssl aes-256-cbc -k "$GPG_PASSPHRASE" -in codesigning.asc.enc -out codesigning.asc -d
 - gpg --fast-import codesigning.asc
 # get parent project
