@@ -16,6 +16,7 @@ function WebRTCAdaptor(initialValues)
 	thiz.audioTrackSender = null;
 	thiz.playStreamId = new Array();
 	thiz.micGainNode = null;
+	thiz.localStream = null;
 
 	thiz.isPlayMode = false;
 	thiz.debug = false;
@@ -64,20 +65,113 @@ function WebRTCAdaptor(initialValues)
 				var media_audio_constraint = { audio: audioConstraint};
 				navigator.mediaDevices.getUserMedia(media_audio_constraint)
 				.then(function(audioStream) {
-					stream.addTrack(audioStream.getAudioTracks()[0]);
-					thiz.gotStream(stream);
+					
+					
+					if (thiz.mediaConstraints != "undefined" && thiz.mediaConstraints.video == "screen+camera" )
+					{
+						navigator.mediaDevices.getUserMedia({video: true, audio: false})
+						.then(function(cameraStream) {
+							//create a canvas element
+							var canvas = document.createElement("canvas"); 
+							var canvasContext = canvas.getContext("2d");
+							
+							//create video element for screen
+							//var screenVideo = document.getElementById('sourceVideo');
+							var screenVideo = document.createElement('video');
+							//TODO: check audio track
+							screenVideo.srcObject = stream;
+							screenVideo.play();
+							
+
+
+                            //create video element for camera
+							var cameraVideo = document.createElement('video');
+							//TODO: check audio track
+							cameraVideo.srcObject = cameraStream;
+							cameraVideo.play();
+							
+						
+							var canvasStream = canvas.captureStream(15);
+							canvasStream.addTrack(audioStream.getAudioTracks()[0]);
+							//call gotStream
+							thiz.gotStream(canvasStream);
+
+							//update the canvas
+							setInterval(function(){
+								
+								//draw screen to canvas
+								canvas.width = screenVideo.videoWidth;
+								canvas.height = screenVideo.videoHeight;
+								canvasContext.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
+							
+							    var cameraWidth = screenVideo.videoWidth*0.2;
+							    var cameraHeight = (cameraVideo.videoHeight/cameraVideo.videoWidth)*cameraWidth
+							        
+							    //draw camera on right bottom corner
+							    var positionX = (canvas.width - cameraWidth) - 36;
+							    var positionY = (canvas.height - cameraHeight) - 36;
+							    canvasContext.drawImage(cameraVideo, positionX, positionY, cameraWidth, cameraHeight);
+								
+															
+							}, 66);
+							
+						})
+						.catch(function(error) {
+							thiz.callbackError(error.name, error.message);
+						});
+					}
+					else {
+						thiz.gotStream(stream);
+					}
 				})
 				.catch(function(error) {
 					thiz.callbackError(error.name, error.message);
 				});
 			}
 			else {
+				stream.addTrack(audioStream.getAudioTracks()[0]);
 				thiz.gotStream(stream);
 			}
 		})
 		.catch(function(error) {
 			thiz.callbackError(error.name, error.message);
 		});
+	}
+	
+	this.openScreen = function(audioConstraint, openCamera) 
+	{
+		var callback = function(message) 
+		{
+			if (message.data == "rtcmulticonnection-extension-loaded") {
+				console.debug("rtcmulticonnection-extension-loaded parameter is received");
+				window.postMessage("get-sourceId", "*");
+			}
+			else if (message.data == "PermissionDeniedError") {
+				console.debug("Permission denied error");
+				thiz.callbackError("screen_share_permission_denied");
+			}
+			else if (message.data && message.data.sourceId) {
+				var mediaConstraints = {
+						audio: false,
+						video: {
+							mandatory: {
+								chromeMediaSource: 'desktop',
+								chromeMediaSourceId: message.data.sourceId,
+							},
+							optional: []
+						}
+				};
+
+				thiz.getUserMedia(mediaConstraints, audioConstraint);
+
+				//remove event listener
+				window.removeEventListener("message", callback);	    
+			}
+
+		}
+		window.addEventListener("message", callback, false);
+
+		window.postMessage("are-you-there", "*");
 	}
 
 	/**
@@ -89,42 +183,19 @@ function WebRTCAdaptor(initialValues)
 		if (typeof mediaConstraints.audio != "undefined" && mediaConstraints.audio != false) {
 			audioConstraint = mediaConstraints.audio;
 		}
-		if (typeof mediaConstraints.video != "undefined" && mediaConstraints.video == "screen") {
-			var callback = function(message) 
-			{
-				if (message.data == "rtcmulticonnection-extension-loaded") {
-					console.debug("rtcmulticonnection-extension-loaded parameter is received");
-					window.postMessage("get-sourceId", "*");
-				}
-				else if (message.data == "PermissionDeniedError") {
-					console.debug("Permission denied error");
-					thiz.callbackError("screen_share_permission_denied");
-				}
-				else if (message.data && message.data.sourceId) {
-					var mediaConstraints = {
-							audio: false,
-							video: {
-								mandatory: {
-									chromeMediaSource: 'desktop',
-									chromeMediaSourceId: message.data.sourceId,
-								},
-								optional: []
-							}
-					};
-
-					thiz.getUserMedia(mediaConstraints, audioConstraint);
-
-					//remove event listener
-					window.removeEventListener("message", callback);	    
-				}
-
+		
+		if (typeof mediaConstraints.video != "undefined") {
+			
+			if (mediaConstraints.video == "screen+camera" || mediaConstraints.video == "screen") {
+				this.openScreen(audioConstraint);
 			}
-			window.addEventListener("message", callback, false);
-
-			window.postMessage("are-you-there", "*");
+		    else {
+				thiz.getUserMedia(mediaConstraints, audioConstraint);
+		    }
 		}
 		else {
-			thiz.getUserMedia(mediaConstraints, audioConstraint);
+			console.error("MediaConstraint video is not defined");
+			thiz.callbackError("media_constraint_video_not_defined");
 		}
 	}
 	
@@ -174,15 +245,15 @@ function WebRTCAdaptor(initialValues)
 	/*
 	 * Below lines are executed as well when this class is created 
 	 */
-	if (!this.isPlayMode && typeof thiz.mediaConstraints != "undefined")  
+	if (!this.isPlayMode && typeof thiz.mediaConstraints != "undefined" && this.localStream == null)  
 	{
-		// if it is not play mode and media constraint is defined, try to get user media
-		
 		if (typeof thiz.mediaConstraints.video != "undefined" && thiz.mediaConstraints.video != false)
-		{
-
+		{   
+			// if it is not play mode and media constraint is defined, try to get user media
 			if (thiz.mediaConstraints.audio.mandatory) 
 			{
+				//this case captures mic and video(audio(screen audio) + video(screen)) and then provide mute/unmute mic with 
+				//enableMicInMixedAudio
 				navigator.mediaDevices.getUserMedia({audio:true, video:false}).then(function(micStream){
 					navigator.mediaDevices.getUserMedia(thiz.mediaConstraints)
 					.then(function(stream) 
@@ -215,18 +286,20 @@ function WebRTCAdaptor(initialValues)
 						console.debug("Running gotStream");
 						thiz.gotStream(stream);
 
-							}).catch(function (error) {
-								thiz.callbackError(error.name, error.message);
-							});
-				}).catch(function(error){
+					}).catch(function (error) {
+						thiz.callbackError(error.name, error.message);
+					});
+				}).catch(function(error) {
 					thiz.callbackError(error.name, error.message);
 				});	
 			}
 			else {
-				thiz.openStream(thiz.mediaConstraints);
+				//most of the times, this statement runs
+				thiz.openStream(thiz.mediaConstraints, thiz.mode);
 			}
 		}
 		else {
+			// get only audio
 			var media_audio_constraint = { audio: thiz.mediaConstraints.audio };
 			navigator.mediaDevices.getUserMedia(media_audio_constraint)
 			.then(function(stream) {
@@ -238,6 +311,8 @@ function WebRTCAdaptor(initialValues)
 		}
 	}
 	else {
+		
+		//just playing, it does not open any stream
 		if (thiz.webSocketAdaptor == null || thiz.webSocketAdaptor.isConnected() == false) {
 			thiz.webSocketAdaptor = new WebSocketAdaptor();
 		}
@@ -259,8 +334,8 @@ function WebRTCAdaptor(initialValues)
 				command : "publish",
 				streamId : streamId,
 				token : token,
-				video: thiz.mediaConstraints.video == false ? false : true,
-						audio: thiz.mediaConstraints.audio == false ? false : true,
+				video: thiz.localStream.getVideoTracks().length > 0 ? true : false,
+				audio: thiz.localStream.getAudioTracks().length > 0 ? true : false,
 		};
 
 		thiz.webSocketAdaptor.send(JSON.stringify(jsCmd));
