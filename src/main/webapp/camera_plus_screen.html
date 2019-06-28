@@ -229,6 +229,9 @@ body {
 		peerconnection_config : pc_config,
 		sdp_constraints : sdpConstraints,
 		localVideoId : "localVideo",
+		camera_location: "top",  // top or bottom
+		camera_margin: 5,  // in pixel, margin between edges
+		camera_percent: 15, //camera width percentage, it's width % of total view
 		debug:true,
 		callback : function(info, description) {
 			if (info == "initialized") {
