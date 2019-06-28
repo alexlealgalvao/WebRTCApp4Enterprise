@@ -20,6 +20,23 @@ function WebRTCAdaptor(initialValues)
 
 	thiz.isPlayMode = false;
 	thiz.debug = false;
+	
+	/**
+	 * The cam_location below is effective when camera and screen is send at the same time.
+	 * possible values are top and bottom. It's on right all the time
+	 */
+	thiz.camera_location = "top"
+		
+	/**
+	 * The cam_margin below is effective when camera and screen is send at the same time.
+	 * This is the margin value in px from the edges 
+	 */	
+	thiz.camera_margin = 15;	
+	
+	/**
+	 * Thiz camera_percent is how large the camera view appear on the screen. It's %15 by default.
+	 */
+	thiz.camera_percent = 15;
 
 	for(var key in initialValues) {
 		if(initialValues.hasOwnProperty(key)) {
@@ -104,12 +121,20 @@ function WebRTCAdaptor(initialValues)
 								canvas.height = screenVideo.videoHeight;
 								canvasContext.drawImage(screenVideo, 0, 0, canvas.width, canvas.height);
 							
-							    var cameraWidth = screenVideo.videoWidth*0.2;
+							    var cameraWidth = screenVideo.videoWidth * (thiz.camera_percent/100);
 							    var cameraHeight = (cameraVideo.videoHeight/cameraVideo.videoWidth)*cameraWidth
 							        
-							    //draw camera on right bottom corner
-							    var positionX = (canvas.width - cameraWidth) - 36;
-							    var positionY = (canvas.height - cameraHeight) - 36;
+								var positionX = (canvas.width - cameraWidth) - thiz.camera_margin;
+								var positionY;
+							    
+							    if (thiz.camera_location == "top") {
+							     	positionY = thiz.camera_margin;
+							    }
+							    else { //if not top, make it bottom							    	
+							    		//draw camera on right bottom corner
+								    	positionY = (canvas.height - cameraHeight) - thiz.camera_margin;
+							    }
+							    
 							    canvasContext.drawImage(cameraVideo, positionX, positionY, cameraWidth, cameraHeight);
 								
 															
