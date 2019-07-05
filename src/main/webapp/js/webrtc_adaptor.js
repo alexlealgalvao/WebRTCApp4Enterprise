@@ -806,19 +806,61 @@ function WebRTCAdaptor(initialValues)
 
 			console.error("create offer error for stream id: " + streamId + " error: " + error);
 		});
+	};
+	
+	/**
+	 * After calling this function, create new WebRTCAdaptor instance, don't use the the same objectone
+	 * Because all streams are closed on server side as well when websocket connection is closed.
+	 */
+	this.closeWebSocket = function() {
+		for (var key in thiz.remotePeerConnection) {
+			thiz.remotePeerConnection[key].close();
+		}
+		//free the remote peer connection by initializing again
+		thiz.remotePeerConnection = new Array();
+		thiz.webSocketAdaptor.close();
 	}
 
-//	this.WebSocketAdaptor = function() {
 	function WebSocketAdaptor() {
 		var wsConn = new WebSocket(thiz.websocket_url);
 
 		var connected = false;
 
+		var pingTimerId = -1;
+			
+		var clearPingTimer = function() {
+			if (pingTimerId != -1) {
+				if (thiz.debug) {
+					console.debug("Clearing ping message timer");
+				}
+				clearInterval(pingTimerId);
+				pingTimerId = -1;
+			}
+		}
+		
+		var sendPing = function() {
+			wsConn.send
+			
+			var jsCmd = {
+					command : "ping"
+			};
+			wsConn.send(JSON.stringify(jsCmd));
+
+		}
+		
+		this.close = function() {
+			wsConn.close();
+		}
+		
 		wsConn.onopen = function() {
 			if (thiz.debug) {
 				console.log("websocket connected");
 			}
 
+			pingTimerId = setInterval(() => {
+				sendPing();
+			}, 5000);
+			
 			connected = true;
 			thiz.callback("initialized");
 		}
@@ -883,19 +925,25 @@ function WebRTCAdaptor(initialValues)
 			else if (obj.command == "streamInformation") {
 				thiz.callback(obj.command, obj);
 			}
+			else if (obj.command == "pong") {
+				thiz.callback(obj.command);
+			}
 
 		}
 
 		wsConn.onerror = function(error) {
 			console.log(" error occured: " + JSON.stringify(error));
+			clearPingTimer();
 			thiz.callbackError(error)
 		}
 
 		wsConn.onclose = function(event) {
 			connected = false;
-
 			console.log("connection closed.");
+			clearPingTimer();
 			thiz.callback("closed", event);
 		}
-	};
+		
+		
+	}
 }

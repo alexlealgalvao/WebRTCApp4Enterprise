@@ -261,6 +261,10 @@ body {
 					console.log("Connecton closed: " + JSON.stringify(description));
 				}
 			}
+			else if (info == "pong") {
+				//ping/pong message are sent to and received from server to make the connection alive all the time
+				//It's especially useful when load balancer or firewalls close the websocket connection due to inactivity
+			}
 		},
 		callbackError : function(error, message) {
 			//some of the possible errors, NotFoundError, SecurityError,PermissionDeniedError
