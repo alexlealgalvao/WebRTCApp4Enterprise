@@ -146,6 +146,7 @@ function WebRTCAdaptor(initialValues)
 						});
 					}
 					else {
+						stream.addTrack(audioStream.getAudioTracks()[0]);
 						thiz.gotStream(stream);
 					}
 				})
