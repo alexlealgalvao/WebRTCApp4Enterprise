@@ -265,12 +265,12 @@ body {
 						if (obj.streams != null) {
 							obj.streams.forEach(function(item) {
 								console.log(item);
-								webRTCAdaptor.play(item, token);
+								webRTCAdaptor.play(item, token, roomNameBox.value);
 							});
 						}
 					} else if (info == "streamJoined") {
 						console.debug("stream joined with id " + obj.streamId);
-						webRTCAdaptor.play(obj.streamId, token);
+						webRTCAdaptor.play(obj.streamId, token, roomNameBox.value);
 					} else if (info == "newStreamAvailable") {
 						var room = roomOfStream[obj.streamId];
 						console.log("new stream available with id: "
