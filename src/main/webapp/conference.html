@@ -344,6 +344,12 @@ body {
 					} else if (error.indexOf("TypeError") != -1) {
 						errorMessage = "Video/Audio is required.";
 					}
+					else if (error.indexOf("UnsecureContext") != -1) {
+						errorMessage = "Fatal Error: Browser cannot access camera and mic because of unsecure context. Please install SSL and access via https";
+					}
+					else if (error.indexOf("WebSocketNotSupported") != -1) {
+						errorMessage = "Fatal Error: WebSocket not supported in this browser";
+					}
 
 					alert(errorMessage);
 				}

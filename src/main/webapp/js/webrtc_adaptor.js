@@ -52,6 +52,12 @@ function WebRTCAdaptor(initialValues)
 		thiz.callbackError("WebSocketNotSupported");
 		return;
 	}
+	
+	if (typeof navigator.mediaDevices == "undefined" && thiz.isPlayMode == false) {
+		console.log("Cannot open camera and mic because of unsecure context. Please Install SSL(https)");
+		thiz.callbackError("UnsecureContext");
+		return;
+	}
 
 	/**
 	 * Get user media
