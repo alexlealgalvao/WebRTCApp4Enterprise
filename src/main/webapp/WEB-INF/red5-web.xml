@@ -41,7 +41,11 @@
 	<bean id="token.service"
 		class="#{ T(io.antmedia.rest.BroadcastRestService).isEnterprise() ? 'io.antmedia.enterprise.security.TokenService' : 'io.antmedia.security.MockTokenService' }">
 	</bean>
-
+	
+	<bean id="ipFilterSecurity"
+		class="#{ T(io.antmedia.rest.BroadcastRestService).isEnterprise() ? 'io.antmedia.enterprise.security.IPFilterSecurity' : 'io.antmedia.security.MockTokenService' }">
+    </bean>
+    
 	<!-- Defines the web handler which acts as an applications endpoint -->
 	<bean id="web.handler" class="io.antmedia.enterprise.webrtcapp.WebRTCSampleApplication">
 		<property name="appSettings" ref="app.settings" />
