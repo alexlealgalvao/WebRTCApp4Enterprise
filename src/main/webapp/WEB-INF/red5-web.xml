@@ -42,8 +42,8 @@
 		class="#{ T(io.antmedia.rest.BroadcastRestService).isEnterprise() ? 'io.antmedia.enterprise.security.TokenService' : 'io.antmedia.security.MockTokenService' }">
 	</bean>
 	
-	<bean id="ipFilterSecurity"
-		class="#{ T(io.antmedia.rest.BroadcastRestService).isEnterprise() ? 'io.antmedia.enterprise.security.IPFilterSecurity' : 'io.antmedia.security.MockTokenService' }">
+	<bean id="publishIPFilter"
+		class="#{ T(io.antmedia.rest.BroadcastRestService).isEnterprise() ? 'io.antmedia.enterprise.security.PublishIPFilter' : 'io.antmedia.security.MockTokenService' }">
     </bean>
     
 	<!-- Defines the web handler which acts as an applications endpoint -->
@@ -57,7 +57,7 @@
 				<bean class="io.antmedia.security.ExpireStreamPublishSecurity" >
 					<property name="dataStoreFactory"  ref="dataStoreFactory"/>
 				</bean>
-				<ref bean="ipFilterSecurity"/>
+				<ref bean="publishIPFilter"/>
 			</list>
 		</property>
 	</bean>
