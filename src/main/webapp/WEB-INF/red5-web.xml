@@ -57,6 +57,7 @@
 				<bean class="io.antmedia.security.ExpireStreamPublishSecurity" >
 					<property name="dataStoreFactory"  ref="dataStoreFactory"/>
 				</bean>
+				<ref bean="ipFilterSecurity"/>
 			</list>
 		</property>
 	</bean>
