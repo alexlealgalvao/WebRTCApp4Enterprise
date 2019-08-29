@@ -5,22 +5,20 @@ pageEncoding="UTF-8"%>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Ant Media Server</title>
 
-
-<link rel="stylesheet"
-	href="https://releases.flowplayer.org/7.2.7/skin/skin.css">
-<!-- hls.js -->
+<!-- videojs includes  -->
+<link href="//vjs.zencdn.net/6.6.0/video-js.css" rel="stylesheet">
+<!-- If you'd like to support IE8 -->
+<script src="//vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+<script src="//vjs.zencdn.net/6.6.0/video.js"></script>
 <script
-	src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/0.10.1/hls.light.min.js"></script>
-<!-- flowplayer -->
-<script src="https://releases.flowplayer.org/7.2.7/flowplayer.min.js"></script>
-
+		src="//cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.12.2/videojs-contrib-hls.min.js"></script>
+<!--  end of video js includes  -->
 
 <script src="js/fetch.js"></script>
 <script src="js/promise.min.js"></script>
 <script src="js/fetch.stream.js"></script>
 <script src="js/webrtc_adaptor.js"></script>
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-
 
 <link href="css/player.css" rel="stylesheet">
 
@@ -34,7 +32,16 @@ pageEncoding="UTF-8"%>
 
 	<!-- HLS Player -->
 	<div style="width: 100%; max-width: 960px;" id="video_container">
-		<div id="video-player" class="fp-slim"></div>
+		<video id="video-player"
+			class="video-js vjs-default-skin vjs-16-9 vjs-big-play-centered"
+			controls preload="auto" data-setup='{"fluid": true}'>
+			<p class="vjs-no-js">
+				To view this video please enable JavaScript, and consider upgrading
+				to a web browser that <a
+					href="http://videojs.com/html5-video-support/" target="_blank">supports
+					HTML5 video</a>
+			</p>
+		</video>
 	</div>
 
 
@@ -170,15 +177,23 @@ pageEncoding="UTF-8"%>
 
 		hideWebRTCElements();
 
+		startHLSPlayer(name, extension, token)
+
+	}
+	
+	
+	function startHLSPlayer(name, extension, token) {
 		var type;
 		var liveStream = false;
 		if (extension == "mp4") {
 			type = "video/mp4";
 			liveStream = false;
-		} else if (extension == "m3u8") {
-			type = "application/x-mpegurl";
+		}
+		else if (extension == "m3u8") {
+			type = "application/x-mpegURL";
 			liveStream = true;
-		} else {
+		}
+		else {
 			console.log("Unknown extension: " + extension);
 			return;
 		}
@@ -188,29 +203,22 @@ pageEncoding="UTF-8"%>
 			preview = name.substring(0, name.indexOf("_adaptive"));
 		}
 
-		flowplayer("#video-player", {
-			poster : "previews/" + preview + ".png",
-			autoplay : autoPlay,
-			ratio : 9 / 16,
-			fullscreen : true,
-			native_fullscreen : true,
-			clip : {
-				live : liveStream,
-				sources : [ {
-					type : type,
-					src : "streams/" + name + "." + extension + "?token="
-							+ token
-				} ]
-			},
-			hlsjs : {
-				recoverMediaError : true,
-				recoverNetworkError : true,
-			}
+		var player = videojs('video-player', {
+					poster: "previews/"+preview+".png"
 		});
 
+		player.src({
+  			src: "streams/" + name + "." + extension + "?token=" + token,
+  			type: type,
+		});
+		
+		player.poster("previews/"+preview+".png");
+
+		if (autoPlay) {
+			player.play();
+		}
 		document.getElementById("video_container").style.display = "block";
 		document.getElementById("video_info").hidden = true;
-
 	}
 
 
